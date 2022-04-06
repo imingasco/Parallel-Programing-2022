@@ -1,0 +1,3 @@
+[submodule "parallelprogramming"]
+	path = parallelprogramming
+	url = https://github.com/pangfengliu/parallelprogramming.git
