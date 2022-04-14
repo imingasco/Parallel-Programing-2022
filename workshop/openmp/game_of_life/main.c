@@ -12,7 +12,7 @@ const int neighbor[8][2] = {
     {1, -1}, {1, 0}, {1, 1}
 };
 
-char game[MAXN + 2][MAXN + 3];
+char game[MAXN + 2][MAXN + 3] = {};
 
 void print_matrix(int N) {
     for (int i = 0; i <= N + 1; i++) {
@@ -23,10 +23,8 @@ void print_matrix(int N) {
 
 void print_game(int N) {
     for (int i = 1; i <= N; i++) {
-        game[i][N + 1] = '\0';
+        // fputs(&game[i][1], stdout);
         puts(&game[i][1]);
-        // game[i][N + 1] = '0';
-        // printf("%.*s\n", N, &game[i][1]);
     }
     return;
 }
@@ -37,10 +35,10 @@ inline int is_live(char c) {
 
 void next_round(int N) {
     char live_count[MAXN + 2][MAXN + 3] = {};
-#pragma omp parallel 
+#pragma omp parallel
     {
-    #pragma omp for
-        for (int i = 1; i <= N; i++) {
+#pragma omp for
+        for (int i = 1; i <= N; i += 3) {
             for (int j = 1; j <= N; j++) {
                 if (is_live(game[i][j])) {
                     for (int k = 0; k < 8; k++) {
@@ -49,7 +47,27 @@ void next_round(int N) {
                 }
             }
         }
-    #pragma omp for
+#pragma omp for
+        for (int i = 2; i <= N; i += 3) {
+            for (int j = 1; j <= N; j++) {
+                if (is_live(game[i][j])) {
+                    for (int k = 0; k < 8; k++) {
+                        live_count[i + neighbor[k][0]][j + neighbor[k][1]]++;
+                    }
+                }
+            }
+        }
+#pragma omp for
+        for (int i = 3; i <= N; i += 3) {
+            for (int j = 1; j <= N; j++) {
+                if (is_live(game[i][j])) {
+                    for (int k = 0; k < 8; k++) {
+                        live_count[i + neighbor[k][0]][j + neighbor[k][1]]++;
+                    }
+                }
+            }
+        }
+#pragma omp for
         for (int i = 1; i <= N; i++) {
             for (int j = 1; j <= N; j++) {
                 int live = is_live(game[i][j]);
@@ -67,18 +85,11 @@ int main(int argc, char **argv) {
     int N, M;
 
     scanf("%d %d\n", &N, &M);
-    for (int i = 0; i < N; i++) {
-        /*
-        for (int j = 0; j < N; j++) {
-            game[i + 1][j + 1] = getchar_unlocked();
-            if (game[i + 1][j + 1] == '\n')
-                game[i + 1][j + 1] = getchar_unlocked();
-        }
-        */
-        gets(&game[i + 1][1]);
-        // game[0][i] = game[N + 1][i] = game[i + 1][0] = game[i + 1][N + 1] = '0'; // pad the map
+    for (int i = 1; i <= N; i++) {
+        // gets(&game[i][1]);
+        fgets(&game[i][1], N + 1, stdin);
+        getchar_unlocked();
     }
-    // game[0][N] = game[0][N + 1] = game[N + 1][N] = game[N + 1][N + 1] = '0'; // pad the map
     for (int i = 0; i < M; i++) {
         next_round(N);
     }
