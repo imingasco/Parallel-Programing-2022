@@ -4,6 +4,7 @@
 #define MAXN 2000
 #define DEAD '0'
 #define LIVE '1'
+#define NTHREAD 32
  
 short encoded_game[MAXN + 2][MAXN + 3] = {};
 char game[MAXN + 2][MAXN + 3] = {};
@@ -99,6 +100,8 @@ void next_round(int N) {
 }
  
 int main(int argc, char **argv) {
+    omp_set_num_threads(NTHREAD);
+
     int N, M;
     scanf("%d %d\n", &N, &M);
 
