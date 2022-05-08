@@ -57,10 +57,6 @@ void OpenCLInit() {
     /* Build program and create kernel */
     program = clCreateProgramWithSource(context, 1, &source_ptr, &source_len, &status);
     status = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
-    if (status != CL_SUCCESS) {
-        printf("yo\n");
-        exit(0);
-    }
     kernel = clCreateKernel(program, "mul", &status);
 
     /* Create buffer */
@@ -72,17 +68,13 @@ void OpenCLInit() {
 void OpenCLExecute() {
     cl_int status;
     size_t globalSize[] = {N, N};
-    size_t localSize[] = {64, 64};
+    size_t localSize[] = {32, 32};
 
     /* Set kernel args */
     status = clSetKernelArg(kernel, 0, sizeof(cl_int), (void *) &N);
-    assert(status == CL_SUCCESS);
     status = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *) &memA);
-    assert(status == CL_SUCCESS);
     status = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *) &memB);
-    assert(status == CL_SUCCESS);
     status = clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *) &memC);
-    assert(status == CL_SUCCESS);
 
     /* Enqueue kernel */
     status = clEnqueueNDRangeKernel(queue, kernel, 2, NULL, globalSize, localSize, 0, NULL, NULL);
@@ -90,7 +82,6 @@ void OpenCLExecute() {
 
     /* Read and output the result */
     status = clEnqueueReadBuffer(queue, memC, CL_TRUE, 0, sizeof(UINT) * MAXN * MAXN, C, 0, NULL, NULL);
-    assert(status == CL_SUCCESS);
     printf("%u\n", signature(N, C));
 }
 
@@ -105,10 +96,10 @@ void OpenCLRelease() {
 }
 
 int main(int argc, char **argv) {
-    OpenCLInit();
     scanf("%d %u %u", &N, &keyA, &keyB);
     rand_gen(keyA, N, A);
     rand_gen(keyB, N, B);
+    OpenCLInit();
     OpenCLExecute();
     OpenCLRelease();
     return 0;

@@ -1,7 +1,7 @@
 /* constant */
 #define MAXN 1024
-#define BLOCKSIZE 64
-__kernel void mul(__global int N, __global int A[MAXN][MAXN], __global int B[MAXN][MAXN], __global int C[MAXN][MAXN]) 
+#define BLOCKSIZE 32
+__kernel void mul(int N, __global int A[MAXN][MAXN], __global int B[MAXN][MAXN], __global int C[MAXN][MAXN]) 
 {
     int globalRow = get_global_id(0);
     int globalCol = get_global_id(1);
