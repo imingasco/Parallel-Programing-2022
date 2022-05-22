@@ -1,36 +1,22 @@
-/* constant */
 #define MAXN 1024
-#define BLOCKSIZE 32
-
-__kernel void mul(int N, __global int A[MAXN][MAXN], __global int B[MAXN][MAXN], __global int C[MAXN][MAXN]) 
-{
-    int globalRow = get_global_id(0);
-    int globalCol = get_global_id(1);
-    int localRow = get_local_id(0);
-    int localCol = get_local_id(1);
-    int blockNum = N / BLOCKSIZE;
-
-    __local int ALocal[BLOCKSIZE][BLOCKSIZE];
-    __local int BLocal[BLOCKSIZE][BLOCKSIZE];
-    int sum = 0;  
-    for (int block = 0; block < blockNum; block++) {
-        ALocal[localRow][localCol] = 
-          A[globalRow][block * BLOCKSIZE + localCol];
-        BLocal[localRow][localCol] = 
-          B[globalRow][block * BLOCKSIZE + localCol];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        /* inner */
-        for (int k = 0; k < BLOCKSIZE; k++) 
-          sum += ALocal[localRow][k] * BLocal[localRow][k];
-        barrier(CLK_LOCAL_MEM_FENCE);
+#define UINT unsigned int
+ 
+__kernel void mul(__global UINT *A, __global UINT *B, __global UINT *C) {
+    // Perform A * B = C
+    int N = get_global_size(0);
+    int global_r = get_global_id(0);
+    int global_c = get_global_id(1);
+    UINT sum = 0;
+    for (int k = 0; k < N; k++) {
+        sum += A[global_r * MAXN + k] * B[k * MAXN + global_c];
     }
-    C[globalRow][globalCol] = sum;
+    C[global_r * MAXN + global_c] = sum;
 }
-
-__kernel void add(__global int A[MAXN][MAXN], __global int B[MAXN][MAXN], __global int C[MAXN][MAXN])
-{
-    int globalRow = get_global_id(0);
-    int globalCol = get_global_id(1);
-    C[globalRow][globalCol] = A[globalRow][globalCol] + B[globalRow][globalCol];
+ 
+__kernel void add(__global UINT *A, __global UINT *B, __global UINT *C) {
+    // Perform A + B = C
+    int global_r = get_global_id(0);
+    int global_c = get_global_id(1);
+    int idx = global_r * MAXN + global_c;
+    C[idx] = A[idx] + B[idx];
 }
-
